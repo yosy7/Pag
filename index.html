@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trap Argentino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --asphalt:#121016; --asphalt2:#1C1922; --asphalt3:#262130;
+    --pink:#FF3D7F; --violet:#8B5CF6; --mustard:#FFC94D; --paper:#EDE7F6;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%; margin:0;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    background:var(--asphalt); color:var(--paper);
+    font-family:'Archivo', sans-serif; line-height:1.55;
+  }
+  h1,h2,h3,.disp{font-family:'Archivo Black', sans-serif;}
+  .wrap{max-width:820px; margin:0 auto; padding:36px 20px 70px;}
+
+  /* HERO */
+  .hero{position:relative; padding:30px 0 20px; border-bottom:3px solid var(--pink);}
+  .hero h1{
+    font-size:clamp(2.4rem, 8vw, 4.2rem); margin:0 0 6px; line-height:0.95;
+    color:var(--paper);
+    text-shadow: 3px 3px 0 var(--pink), 6px 6px 0 var(--violet);
+  }
+  .hero p{max-width:520px; color:#C9C3DA; font-size:1.05rem; margin:14px 0 0;}
+  .hero .tagline{
+    display:inline-block; margin-top:14px; color:var(--mustard); font-weight:700;
+    border-left:3px solid var(--mustard); padding-left:10px;
+  }
+
+  /* TABS (CSS-only) */
+  .tabs{margin-top:34px;}
+  .tab-input{display:none;}
+  .tab-labels{display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--asphalt3); margin-bottom:22px;}
+  .tab-labels label{
+    cursor:pointer; padding:10px 16px; font-family:'Archivo Black',sans-serif; font-size:.85rem;
+    color:#948DAA; border-bottom:3px solid transparent; transition:color .15s, border-color .15s;
+  }
+  .tab-panel{display:none;}
+  .tab-labels label:hover{color:var(--paper);}
+
+  #t1:checked ~ .tab-labels label[for="t1"],
+  #t2:checked ~ .tab-labels label[for="t2"],
+  #t3:checked ~ .tab-labels label[for="t3"],
+  #t4:checked ~ .tab-labels label[for="t4"]{
+    color:var(--paper); border-color:var(--pink);
+  }
+  #t1:checked ~ .panels #p1,
+  #t2:checked ~ .panels #p2,
+  #t3:checked ~ .panels #p3,
+  #t4:checked ~ .panels #p4{display:block;}
+
+  /* TIMELINE */
+  .timeline{list-style:none; margin:0; padding:0; border-left:2px solid var(--asphalt3);}
+  .timeline li{position:relative; padding:4px 0 26px 26px;}
+  .timeline li::before{
+    content:""; position:absolute; left:-7px; top:8px; width:12px; height:12px;
+    border-radius:50%; background:var(--asphalt); border:2px solid var(--pink);
+  }
+  .timeline .year{font-family:'Archivo Black',sans-serif; color:var(--mustard); font-size:.95rem; display:block; margin-bottom:2px;}
+  .timeline p{margin:0; color:#D8D2E8;}
+
+  /* ARTISTS as <details> cards, no JS */
+  .artist{
+    background:var(--asphalt2); border:1px solid var(--asphalt3); border-radius:2px;
+    margin-bottom:10px; overflow:hidden;
+  }
+  .artist summary{
+    cursor:pointer; list-style:none; padding:16px 18px; display:flex; align-items:center;
+    justify-content:space-between; font-family:'Archivo Black',sans-serif; font-size:1.05rem;
+  }
+  .artist summary::-webkit-details-marker{display:none;}
+  .artist summary .role{font-family:'Archivo',sans-serif; font-weight:400; font-size:.8rem; color:#948DAA; margin-left:10px;}
+  .artist summary::after{content:"+"; color:var(--pink); font-size:1.3rem; margin-left:10px;}
+  .artist[open] summary::after{content:"–";}
+  .artist .body{padding:0 18px 18px; color:#D8D2E8; font-size:.95rem;}
+
+  /* SOUND grid */
+  .sound-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+  .sound-card{background:var(--asphalt2); border-top:3px solid var(--violet); padding:16px 18px;}
+  .sound-card h3{margin:0 0 8px; font-size:1rem; color:var(--paper);}
+  .sound-card p{margin:0; font-size:.9rem; color:#C9C3DA;}
+
+  /* TRACK CARD (pure CSS play toggle) */
+  .track{
+    margin-top:14px; padding-top:14px; border-top:1px dashed rgba(244,238,221,.2);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .vinyl{
+    width:56px; height:56px; border-radius:50%; flex:none;
+    background:
+      radial-gradient(circle at center, var(--asphalt2) 0 6px, var(--mustard) 6.5px 8px, var(--asphalt2) 8.5px 100%),
+      repeating-radial-gradient(circle at center, #0000 0 4px, rgba(244,238,221,.06) 4.5px 5px);
+    border:1px solid rgba(244,238,221,.25);
+  }
+  .play-toggle{display:none;}
+  .play-toggle:checked ~ .track-info .vinyl{animation:spin 2.2s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .track-info{display:flex; align-items:center; gap:14px; flex:1; min-width:200px;}
+  .track-text{flex:1; min-width:140px;}
+  .track-text .label{display:block; font-size:.75rem; color:#948DAA; margin-bottom:2px;}
+  .track-text .title{font-family:'Archivo Black',sans-serif; font-size:.95rem;}
+  .play-btn{
+    display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;
+    border:1px solid var(--pink); color:var(--pink); border-radius:3px; padding:6px 12px;
+    font-family:'Archivo Black',sans-serif; font-size:.75rem;
+  }
+  .play-toggle:checked ~ .track-info .play-btn::before{content:"❚❚ REPRODUCIENDO";}
+  .play-btn::before{content:"▶ REPRODUCIR";}
+  .play-toggle:checked ~ .track-info .play-btn{background:var(--pink); color:var(--asphalt);}
+  .eq{display:flex; align-items:flex-end; gap:2px; height:16px; opacity:.35;}
+  .eq span{width:3px; background:var(--mustard); height:4px;}
+  .play-toggle:checked ~ .track-info .eq{opacity:1;}
+  .play-toggle:checked ~ .track-info .eq span:nth-child(1){animation:eq 0.6s ease-in-out infinite;}
+  .play-toggle:checked ~ .track-info .eq span:nth-child(2){animation:eq 0.5s ease-in-out infinite .1s;}
+  .play-toggle:checked ~ .track-info .eq span:nth-child(3){animation:eq 0.7s ease-in-out infinite .15s;}
+  .play-toggle:checked ~ .track-info .eq span:nth-child(4){animation:eq 0.45s ease-in-out infinite .05s;}
+  @keyframes eq{0%,100%{height:4px;}50%{height:16px;}}
+  .spotify-link{
+    font-size:.75rem; color:var(--mustard); text-decoration:none; border-bottom:1px dotted var(--mustard);
+    white-space:nowrap;
+  }
+  .spotify-link:hover{color:var(--paper);}
+
+  footer{margin-top:50px; font-size:.75rem; color:#5E5872; text-align:center;}
+
+  @media (max-width:480px){
+    .tab-labels label{padding:8px 10px; font-size:.75rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>TRAP<br>ARGENTINO</h1>
+    <p>De los freestyle battles de plaza a los estadios: cómo un género nacido en la escena under de Buenos Aires se convirtió en la banda de sonido de una generación.</p>
+    <span class="tagline">Zona sur, autotune y códigos de barrio.</span>
+  </div>
+
+  <div class="tabs">
+    <input type="radio" name="tabs" id="t1" class="tab-input" checked>
+    <input type="radio" name="tabs" id="t2" class="tab-input">
+    <input type="radio" name="tabs" id="t3" class="tab-input">
+    <input type="radio" name="tabs" id="t4" class="tab-input">
+
+    <div class="tab-labels">
+      <label for="t1">Qué es</label>
+      <label for="t2">Línea de tiempo</label>
+      <label for="t3">Artistas clave</label>
+      <label for="t4">Sonido y estilo</label>
+    </div>
+
+    <div class="panels">
+      <div class="tab-panel" id="p1">
+        <p>El trap argentino es la versión local del trap estadounidense, mezclada con el freestyle rioplatense, el rap y referencias a la vida de barrio en el conurbano bonaerense. Nació a mediados de la década de 2010 dentro de la escena de batallas de freestyle, donde varios raperos empezaron a experimentar con bases más lentas, autotune y una actitud más melódica que combativa.</p>
+        <p>A diferencia del rap de batalla, el trap prioriza el flow relajado, las melodías pegadizas y las letras que hablan de ascenso social, lujo, relaciones y la nostalgia del barrio de origen. Se convirtió en el género más escuchado por adolescentes y jóvenes en Argentina durante la segunda mitad de los 2010, y desde ahí se expandió a toda Latinoamérica y España.</p>
+      </div>
+
+      <div class="tab-panel" id="p2">
+        <ul class="timeline">
+          <li><span class="year">2012–2015</span><p>La escena de freestyle under, con circuitos de batallas de improvisación en plazas de Buenos Aires, forma la base de MCs que luego pasarán al trap.</p></li>
+          <li><span class="year">2016</span><p>Surge "El Quinto Escalón", una liga de freestyle que se vuelve semillero de las futuras figuras del género y punto de conexión entre el freestyle y el trap.</p></li>
+          <li><span class="year">2017</span><p>El trap argentino explota masivamente: temas y colaboraciones entre raperos jóvenes empiezan a sonar fuerte en plataformas digitales y redes sociales.</p></li>
+          <li><span class="year">2018–2019</span><p>Consolidación comercial: giras, estadios y colaboraciones internacionales posicionan al género como un fenómeno cultural, no solo musical.</p></li>
+          <li><span class="year">2020 en adelante</span><p>El trap se diversifica: aparecen fusiones con RKT, cumbia 420 y pop urbano, y varios de sus referentes cruzan hacia el mainstream latino.</p></li>
+        </ul>
+      </div>
+
+      <div class="tab-panel" id="p3">
+        <details class="artist">
+          <summary>Duki <span class="role">uno de los máximos exponentes del género</span></summary>
+          <div class="body">
+            Salió de las battles de freestyle y se transformó en una de las caras más reconocibles del trap argentino, con un estilo que mezcla flow melódico y referencias a la cultura de barrio.
+            <div class="track">
+              <input type="checkbox" id="play1" class="play-toggle">
+              <label for="play1" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Su tema más escuchado</span><span class="title">She Don't Give a Fo</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Duki%20She%20Don't%20Give%20a%20Fo" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>Paulo Londra <span class="role">flow melódico y proyección internacional</span></summary>
+          <div class="body">
+            Con un estilo más orientado al pop urbano, fue uno de los primeros en cruzar el género hacia audiencias fuera de Argentina.
+            <div class="track">
+              <input type="checkbox" id="play2" class="play-toggle">
+              <label for="play2" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Su tema más escuchado</span><span class="title">Adán y Eva</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Paulo%20Londra%20Adan%20y%20Eva" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>Khea <span class="role">de las voces fundadoras del trap local</span></summary>
+          <div class="body">
+            Parte de la primera camada que llevó el trap argentino a colaboraciones con artistas de otros países de habla hispana.
+            <div class="track">
+              <input type="checkbox" id="play3" class="play-toggle">
+              <label for="play3" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Su tema más escuchado</span><span class="title">Loca (con Duki y Cazzu)</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Khea%20Loca%20Duki%20Cazzu" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>Nicki Nicole <span class="role">una de las principales voces femeninas</span></summary>
+          <div class="body">
+            Combina trap con matices de R&B y pop, y es una de las artistas que más visibilidad le dio a la presencia femenina dentro del género.
+            <div class="track">
+              <input type="checkbox" id="play4" class="play-toggle">
+              <label for="play4" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Una de sus canciones más populares</span><span class="title">Wapo Traketero</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Nicki%20Nicole%20Wapo%20Traketero" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>Trueno <span class="role">rap técnico dentro del trap</span></summary>
+          <div class="body">
+            Viene también del freestyle y se destaca por una escritura más elaborada, con guiños al hip hop clásico dentro de bases modernas.
+            <div class="track">
+              <input type="checkbox" id="play5" class="play-toggle">
+              <label for="play5" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Una de sus canciones más populares</span><span class="title">Tierra Zanta</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Trueno%20Tierra%20Zanta" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>Bizarrap <span class="role">el productor detrás de la ola</span></summary>
+          <div class="body">
+            Sin ser cantante, sus sesiones de producción se volvieron un formato clave para lanzar y relanzar carreras dentro de la escena urbana argentina.
+            <div class="track">
+              <input type="checkbox" id="play6" class="play-toggle">
+              <label for="play6" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Su sesión más escuchada</span><span class="title">Quevedo: Bzrp Music Sessions, Vol. 52</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Quevedo%20Bzrp%20Music%20Sessions%20Vol%2052" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>C.R.O <span class="role">voz reconocible del under a lo masivo</span></summary>
+          <div class="body">
+            Parte de la nueva camada del trap argentino, con presencia en colaboraciones grupales junto a otros referentes de la escena.
+            <div class="track">
+              <input type="checkbox" id="play7" class="play-toggle">
+              <label for="play7" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Una de sus colaboraciones más sonadas</span><span class="title">Tumbando el Club</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/C.R.O%20Tumbando%20el%20Club" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+        <details class="artist">
+          <summary>Lit Killah <span class="role">de las voces jóvenes con más pegada</span></summary>
+          <div class="body">
+            Empezó muy joven dentro de la escena y se hizo conocido por su capacidad de sumarse a grandes colaboraciones grupales que se volvieron himnos radiales.
+            <div class="track">
+              <input type="checkbox" id="play8" class="play-toggle">
+              <label for="play8" class="track-info" style="cursor:pointer;">
+                <div class="vinyl"></div>
+                <div class="track-text"><span class="label">Una de sus canciones más populares</span><span class="title">Los del Espacio</span></div>
+                <span class="play-btn"></span>
+                <div class="eq"><span></span><span></span><span></span><span></span></div>
+              </label>
+              <a class="spotify-link" href="https://open.spotify.com/search/Lit%20Killah%20Los%20del%20Espacio" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="tab-panel" id="p4">
+        <div class="sound-grid">
+          <div class="sound-card">
+            <h3>Bases y producción</h3>
+            <p>Hi-hats acelerados, 808 profundos y samples oscuros heredados del trap de Atlanta, adaptados a un tempo más relajado.</p>
+          </div>
+          <div class="sound-card">
+            <h3>Voz y autotune</h3>
+            <p>El autotune se usa como recurso melódico, no solo correctivo: convierte la voz en un instrumento más dentro de la mezcla.</p>
+          </div>
+          <div class="sound-card">
+            <h3>Herencia del freestyle</h3>
+            <p>Muchos referentes vienen de las batallas de improvisación, lo que explica la fluidez y el juego de palabras en las letras.</p>
+          </div>
+          <div class="sound-card">
+            <h3>Temáticas</h3>
+            <p>Ascenso social, vida nocturna, relaciones y orgullo de barrio, contadas en primera persona y con jerga rioplatense.</p>
+          </div>
+          <div class="sound-card">
+            <h3>Fusiones</h3>
+            <p>Cruces con RKT, cumbia 420 y pop urbano ampliaron el género hacia nuevas audiencias en los últimos años.</p>
+          </div>
+          <div class="sound-card">
+            <h3>Códigos visuales</h3>
+            <p>Estética urbana, ropa deportiva y referencias a la cultura de barrio como parte de la identidad del movimiento.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+</body>
+</html>
